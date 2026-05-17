@@ -60,6 +60,7 @@ export const ReportesAdmin: React.FC<Props> = ({
   const [loadResult, setLoadResult] = useState<{ message: string, success: boolean } | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
   const [isManualProcessing, setIsManualProcessing] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<{url: string, filename: string} | null>(null);
 
   const isProgramOnDay = (program: ProgramFicha, dateStr: string) => {
       const date = new Date(dateStr + 'T12:00:00');
@@ -293,7 +294,9 @@ export const ReportesAdmin: React.FC<Props> = ({
             head: [['Nombre', 'Mes', 'Reportes', 'Bruto', 'Impuestos', 'Neto']],
             body: data.map(d => [d.nombre, d.mes, d.reportes.toString(), `$${d.bruto.toFixed(2)}`, `$${d.impuestos.toFixed(2)}`, `$${d.neto.toFixed(2)}`]),
         });
-        doc.save(`Pagos_CMNL_${filterMonth}.pdf`);
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        setPdfPreviewUrl({ url, filename: `Pagos_CMNL_${filterMonth}.pdf` });
     } else if (format === 'docx') {
         const table = new DocTable({
             width: { size: 100, type: WidthType.PERCENTAGE },
@@ -547,7 +550,9 @@ export const ReportesAdmin: React.FC<Props> = ({
       head: [['Especialidad', 'Nombre y Apellidos']],
       body: tableData,
     });
-    doc.save(`Reporte_FP02_${report.programa}_${report.fecha}.pdf`);
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    setPdfPreviewUrl({ url, filename: `Reporte_FP02_${report.programa}_${report.fecha}.pdf` });
   };
 
   const handleEditReport = (report: FP02Report) => {
@@ -946,6 +951,30 @@ export const ReportesAdmin: React.FC<Props> = ({
               Aceptar
             </button>
           </div>
+        </div>
+      )}
+
+      {pdfPreviewUrl && (
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
+           <div className="flex justify-between items-center px-4 py-3 border-b border-white/10 bg-card-dark">
+               <h3 className="text-white font-bold text-sm truncate pr-4">{pdfPreviewUrl.filename}</h3>
+               <button onClick={() => { URL.revokeObjectURL(pdfPreviewUrl.url); setPdfPreviewUrl(null); }} className="size-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 hover:bg-white/20">
+                  <span className="material-symbols-outlined text-white">close</span>
+               </button>
+           </div>
+           <div className="flex-1 w-full bg-white relative">
+               <iframe src={pdfPreviewUrl.url} className="absolute inset-0 w-full h-full border-0" title="PDF Viewer" />
+           </div>
+           <div className="p-4 bg-card-dark border-t border-white/10 flex justify-center gap-4">
+              <button onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = pdfPreviewUrl.url;
+                  a.download = pdfPreviewUrl.filename;
+                  a.click();
+              }} className="bg-[#9E7649] px-6 py-3 rounded-xl text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                 <span className="material-symbols-outlined text-sm">download</span> Forzar Descarga
+              </button>
+           </div>
         </div>
       )}
 

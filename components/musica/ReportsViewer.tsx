@@ -16,6 +16,8 @@ const ReportsViewer: React.FC<ReportsViewerProps> = ({ users = [], onEdit, curre
     const [showSummary, setShowSummary] = useState(false);
     const [showTutorial, setShowTutorial] = useState(false);
 
+    const [pdfPreviewUrl, setPdfPreviewUrl] = useState<{url: string, filename: string} | null>(null);
+
     useEffect(() => {
         const seen = localStorage.getItem('rcm_tut_reports');
         if (!seen) {
@@ -43,13 +45,7 @@ const ReportsViewer: React.FC<ReportsViewerProps> = ({ users = [], onEdit, curre
         const downloadName = `PM-${safeProgram}-${datePart}.pdf`;
 
         const url = URL.createObjectURL(report.pdfBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = downloadName;
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        a.remove();
+        setPdfPreviewUrl({ url, filename: downloadName });
 
         await updateReportStatus(report.id, { downloaded: true });
         setReports(prev => prev.map(r => r.id === report.id ? { ...r, status: { ...r.status, downloaded: true, sent: r.status?.sent || false } } : r));
@@ -231,9 +227,9 @@ const ReportsViewer: React.FC<ReportsViewerProps> = ({ users = [], onEdit, curre
                                 <button 
                                     onClick={() => handleDownload(report)}
                                     className="size-8 rounded-full bg-[#1A100C] text-blue-400 hover:bg-blue-500 hover:text-white transition-colors flex items-center justify-center"
-                                    title="Descargar PDF"
+                                    title="Ver PDF"
                                 >
-                                    <span className="material-symbols-outlined text-sm">download</span>
+                                    <span className="material-symbols-outlined text-sm">visibility</span>
                                 </button>
                                 <button 
                                     onClick={() => handleDelete(report.id)}
@@ -245,6 +241,30 @@ const ReportsViewer: React.FC<ReportsViewerProps> = ({ users = [], onEdit, curre
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {pdfPreviewUrl && (
+                <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex flex-col animate-fade-in">
+                   <div className="flex justify-between items-center px-4 py-3 border-b border-[#9E7649]/20 bg-[#2C1B15]">
+                       <h3 className="text-white font-bold text-sm truncate pr-4">{pdfPreviewUrl.filename}</h3>
+                       <button onClick={() => { URL.revokeObjectURL(pdfPreviewUrl.url); setPdfPreviewUrl(null); }} className="size-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 hover:bg-white/20">
+                          <span className="material-symbols-outlined text-white">close</span>
+                       </button>
+                   </div>
+                   <div className="flex-1 w-full bg-white relative">
+                       <iframe src={pdfPreviewUrl.url} className="absolute inset-0 w-full h-full border-0" title="PDF Viewer" />
+                   </div>
+                   <div className="p-4 bg-[#2C1B15] border-t border-[#9E7649]/20 flex justify-center gap-4">
+                      <button onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = pdfPreviewUrl.url;
+                          a.download = pdfPreviewUrl.filename;
+                          a.click();
+                      }} className="bg-[#9E7649] px-6 py-3 rounded-xl text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                         <span className="material-symbols-outlined text-sm">download</span> Forzar Descarga
+                      </button>
+                   </div>
                 </div>
             )}
 

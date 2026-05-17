@@ -134,6 +134,7 @@ const Editorial: React.FC<EditorialProps> = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const [viewPdfArchive, setViewPdfArchive] = useState(false);
   const [archiveList, setArchiveList] = useState<GeneratedAgenda[]>([]);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<{url: string, filename: string} | null>(null);
 
   const [confirmDialog, setConfirmDialog] = useState<{ message: string, onConfirm: () => void } | null>(null);
   const [alertDialog, setAlertDialog] = useState<{ message: string, onAlertClose?: () => void } | null>(null);
@@ -196,11 +197,7 @@ const Editorial: React.FC<EditorialProps> = ({
 
   const handleArchiveDownload = (agenda: GeneratedAgenda) => {
       const url = window.URL.createObjectURL(agenda.blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = agenda.filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      setPdfPreviewUrl({ url, filename: agenda.filename });
   };
 
   const handleArchiveWhatsApp = async (agenda: GeneratedAgenda) => {
@@ -419,6 +416,29 @@ const Editorial: React.FC<EditorialProps> = ({
 
   const dialogModals = (
     <>
+      {pdfPreviewUrl && (
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
+           <div className="flex justify-between items-center px-4 py-3 border-b border-white/10 bg-card-dark">
+               <h3 className="text-white font-bold text-sm truncate pr-4">{pdfPreviewUrl.filename}</h3>
+               <button onClick={() => { URL.revokeObjectURL(pdfPreviewUrl.url); setPdfPreviewUrl(null); }} className="size-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 hover:bg-white/20">
+                  <span className="material-symbols-outlined text-white">close</span>
+               </button>
+           </div>
+           <div className="flex-1 w-full bg-white relative">
+               <iframe src={pdfPreviewUrl.url} className="absolute inset-0 w-full h-full border-0" title="PDF Viewer" />
+           </div>
+           <div className="p-4 bg-card-dark border-t border-white/10 flex justify-center gap-4">
+              <button onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = pdfPreviewUrl.url;
+                  a.download = pdfPreviewUrl.filename;
+                  a.click();
+              }} className="bg-primary px-6 py-3 rounded-xl text-xs font-bold text-background-dark uppercase tracking-widest flex items-center gap-2">
+                 <span className="material-symbols-outlined text-sm">download</span> Forzar Descarga
+              </button>
+           </div>
+        </div>
+      )}
       {confirmDialog && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-card-dark border border-white/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl">
@@ -956,16 +976,12 @@ const Editorial: React.FC<EditorialProps> = ({
                             : agenda.fileData;
                           const blob = new Blob([binaryData], { type: 'application/pdf' });
                           const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = agenda.filename;
-                          a.click();
-                          URL.revokeObjectURL(url);
+                          setPdfPreviewUrl({ url, filename: agenda.filename });
                         } else {
                           setAlertDialog({ message: "Este archivo de la nube solo tiene metadatos (probablemente es mayor a 1MB). Por favor, solicita el archivo original por WhatsApp." });
                         }
                       }} className="bg-primary text-background-dark py-2 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1 shadow-lg shadow-primary/20">
-                        <span className="material-symbols-outlined text-sm">download</span> Descargar
+                        <span className="material-symbols-outlined text-sm">visibility</span> Ver PDF
                       </button>
                       <button onClick={() => handleArchiveWhatsApp(agenda)} className="bg-green-600/20 text-green-400 hover:bg-green-600/30 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1">
                         <span className="material-symbols-outlined text-sm">chat</span> Grupo WhatsApp
