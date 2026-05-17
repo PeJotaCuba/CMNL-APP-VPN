@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} { allow read, write: if false; }
+
+    // Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Role based helpers
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+    function isStaff() {
+      return isSignedIn() && getUserData().role in ['admin', 'worker', 'coordinator'];
+    }
+
+    // 1. Users Collection
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'username', 'role', 'email']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.username is string && data.username.size() <= 64 &&
+             data.role in ['admin', 'worker', 'listener', 'coordinator'] &&
+             data.email is string && data.email.size() <= 128;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && userId == request.auth.uid && isValidUser(incoming()) && incoming().role != 'admin';
+      allow update: if isSignedIn() && (
+        (userId == request.auth.uid && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['avatar', 'mobile', 'habitualPrograms', 'habitualProgramsByRole', 'habitualProgramsDays']) &&
+         incoming().role == existing().role) ||
+        isAdmin()
+      );
+    }
+
+    // 2. Generated Agendas
+    function isValidAgenda(data) {
+      return data.keys().hasAll(['id', 'filename', 'createdAt', 'authorId']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.filename is string && data.filename.size() <= 255 &&
+             data.authorId == request.auth.uid &&
+             data.createdAt == request.time;
+    }
+
+    match /generated_agendas/{agendaId} {
+      allow read: if true;
+      allow create: if true; 
+      allow delete: if true; // Permissive for the current internal collaboration phase
+    }
+
+    // 3. Editorial Contents (Real-time sync)
+    function isValidContent(data) {
+      return data.keys().hasAll(['programId', 'weekId', 'dayName', 'month', 'updatedAt', 'updatedBy']) &&
+             data.programId is string && data.programId.size() <= 128 &&
+             data.weekId is string && data.weekId.size() <= 128;
+    }
+
+    match /editorial_contents/{contentId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if isAdmin();
+    }
+  }
+}

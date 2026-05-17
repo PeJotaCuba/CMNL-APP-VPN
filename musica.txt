@@ -1,0 +1,29 @@
+components/musica/TrackList.tsx:37:const FIXED_ROOTS = ['Música 1', 'Música 2', 'Música 3', 'Música 4', 'Música 5'];
+components/musica/TrackList.tsx:508:                  <input className="w-full p-3 border border-[#9E7649]/30 bg-[#1A100C] text-white rounded-xl mb-4 text-sm outline-none focus:border-[#9E7649]" placeholder="Ej: Música 6" value={newNameInput} onChange={e => setNewNameInput(e.target.value)} autoFocus />
+components/musica/Settings.tsx:176:      const message = `Saludos. Tus credenciales APP-RCM son\nUsuario: ${u.username}\nPIN: ${u.password}\n\nDisfruta de nuestras apps en los siguientes enlaces:\nAgenda https://rcmagenda.vercel.app/#/home\nMúsica https://rcm-musica.vercel.app/`;
+components/musica/Guide.tsx:5:        title: "Explorador de Música",
+components/musica/Guide.tsx:7:        content: "Navega por las carpetas de música del servidor (Música 1, 2, 3...). Puedes buscar canciones por título, intérprete o nombre de archivo. Toca una canción para ver sus detalles o una carpeta para abrirla."
+components/musica/constants.ts:7:    "Metal", "Música árabe", "Música electrónica", "Música india (clásica)", "Ópera", "Pop", "Punk", 
+components/MusicaApp.tsx:25:    'Música 1': { url: 'https://raw.githubusercontent.com/PeJotaCuba/Bases-de-datos-CMNL/refs/heads/almacen/mdatos1.json', filename: 'mdatos1.json' },
+components/MusicaApp.tsx:26:    'Música 2': { url: 'https://raw.githubusercontent.com/PeJotaCuba/Bases-de-datos-CMNL/refs/heads/almacen/mdatos2.json', filename: 'mdatos2.json' },
+components/MusicaApp.tsx:27:    'Música 3': { url: 'https://raw.githubusercontent.com/PeJotaCuba/Bases-de-datos-CMNL/refs/heads/almacen/mdatos3.json', filename: 'mdatos3.json' },
+components/MusicaApp.tsx:28:    'Música 4': { url: 'https://raw.githubusercontent.com/PeJotaCuba/Bases-de-datos-CMNL/refs/heads/almacen/mdatos4.json', filename: 'mdatos4.json' },
+components/MusicaApp.tsx:29:    'Música 5': { url: 'https://raw.githubusercontent.com/PeJotaCuba/Bases-de-datos-CMNL/refs/heads/almacen/mdatos5.json', filename: 'mdatos5.json' },
+components/MusicaApp.tsx:87:  const [activeRoot, setActiveRoot] = useState<string>('Música 1'); 
+components/MusicaApp.tsx:604:        sectionTitle="Música CMNL"
+components/Sidebar.tsx:134:                  label="Música" 
+components/BackupDialog.tsx:57:                                <p className="text-[10px] uppercase tracking-wider text-[#9E7649] font-bold mb-1">Música</p>
+components/WorkerHome.tsx:152:            // 2. Música: Selecciones y producciones
+components/GestionApp.tsx:961:            music_cuban: getValue('Música Cubana'),
+components/GestionApp.tsx:962:            music_foreign: getValue('Música Extranjera'),
+components/GestionApp.tsx:969:                music: getValue('Música'),
+components/GestionApp.tsx:1573:              name: 'Música',
+components/GestionApp.tsx:1717:              // Música
+components/GestionApp.tsx:1718:              { group: 'Música', isGroup: true, plannedTotal: getPlanned('musicales'), plannedVivo: getPlanned('musicales'), plannedGrabado: 0 },
+components/GestionApp.tsx:3602:                                      <span className="text-[#E8DCCF]/50">Música:</span> 
+components/GestionApp.tsx:3650:                                      <span className="text-[#E8DCCF]/50">Música Cubana:</span> 
+components/GestionApp.tsx:3663:                                      <span className="text-[#E8DCCF]/50">Música Extranjera:</span> 
+utils/fichasData.ts:44:    theme: "Música popular cubana y/o extranjera",
+utils/fichasData.ts:121:    profile: "Espacio a una voz que presenta y desarrolla el tema, realiza entrevistas y comentarios. Incluye invitados, siempre que el contenido lo necesite. Enfoca cuestiones generales de la cultura bayamesa y su proyección hacia el plano nacional e Internacional. Diariamente el programa dedica su emisión a una manifestación del arte: LUNES: Audiovisuales, en dependencia de las necesidades del programa; MARTES: Artes Plásticas; MIÉRCOLES: Literatura; JUEVES: Música; VIERNES: Artes escénicas. El programa circunstancialmente puede relacionarse con eventos culturales que se desarrollen en la ciudad.\nEl programa puede utilizar entrevistas, comentarios e informaciones, que estén o no en función del tema central. Tiene un diseño sonoro acorde a las características del programa. Conjuga todos los elementos técnicos artísticos del medio radial. Este espacio se puede realizar desde exteriores en instituciones o comunidades donde se desarrollen actividades culturales. La música estará en función del texto siempre que sea posible. Incluye propaganda directa e indirecta.",
+utils/fichasData.ts:261:    theme: "Música Popular Cubana y Extranjera",
+utils/fichasData.ts:295:    literarySupport: "Guión: Muy Complejo no escenificado. Costo desde $350.00 hasta $700.00.\nColaboración: Texto para comparecencia de especialista y/o experto (Música, Artes Plásticas, Literatura, Artes Escénicas) Semanal. Costo desde $200.00 hasta $2000.00.",

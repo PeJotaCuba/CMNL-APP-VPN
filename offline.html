@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin Conexión - CMNL App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1A100C;
+            color: #E8DCCF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 { color: #C69C6D; margin-bottom: 10px; }
+        p { color: #9E7649; margin-bottom: 30px; }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        button {
+            background-color: #8B5E3C;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #5D3A24; }
+    </style>
+</head>
+<body>
+    <div class="icon">📡</div>
+    <h1>Sin Conexión</h1>
+    <p>Parece que no tienes acceso a internet.<br>Radio Ciudad Monumento guarda contenido localmente, pero necesitas conexión para actualizar.</p>
+    <button onclick="window.location.reload()">Reintentar</button>
+</body>
+</html>
