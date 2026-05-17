@@ -31,13 +31,32 @@ async function startServer() {
 
     app.get('/api/agendas', async (req, res) => {
       try {
-        const resp = await fetch(`${baseUrl}/generated_agendas`);
+        const resp = await fetch(`${baseUrl}:runQuery`, {
+          method: 'POST',
+          body: JSON.stringify({
+            structuredQuery: {
+              from: [{ collectionId: 'generated_agendas' }],
+              orderBy: [{ field: { fieldPath: 'createdAt' }, direction: 'DESCENDING' }],
+              limit: 50
+            }
+          })
+        });
         const data = await resp.json();
-        const docs = (data.documents || []).map((doc: any) => {
-          const id = doc.name.split('/').pop();
-          const fields = doc.fields || {};
+        
+        if (data[0] && data[0].error) {
+           return res.status(500).json({ error: data[0].error.message });
+        }
+        
+        // runQuery returns an array of { document, readTime }
+        if (!Array.isArray(data) || (!data[0]?.document && Object.keys(data[0] || {}).length <= 1)) {
+           return res.json([]);
+        }
+        
+        const docs = data.map((d: any) => {
+          if (!d.document) return null;
+          const fields = d.document.fields || {};
           return {
-            id,
+            id: d.document.name.split('/').pop(),
             filename: fields.filename?.stringValue,
             createdAt: fields.createdAt?.timestampValue || fields.createdAt?.stringValue,
             month: fields.month?.stringValue,
@@ -47,8 +66,7 @@ async function startServer() {
             sharedBy: fields.sharedBy?.stringValue,
             authorId: fields.authorId?.stringValue
           };
-        });
-        docs.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }).filter(Boolean);
         res.json(docs);
       } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -78,8 +96,15 @@ async function startServer() {
           body: JSON.stringify({ fields })
         });
         const data = await resp.json();
+        if (!resp.ok) {
+           console.error("Firestore Upload Error from Proxy:", data);
+           require('fs').appendFileSync('proxy.log', JSON.stringify({err: data}) + '\\n');
+           return res.status(resp.status).json(data);
+        }
         res.json(data);
       } catch (e: any) {
+        console.error("Server fetch error:", e.message);
+        require('fs').appendFileSync('proxy.log', JSON.stringify({err: e.message}) + '\\n');
         res.status(500).json({ error: e.message });
       }
     });
@@ -96,11 +121,24 @@ async function startServer() {
 
     app.delete('/api/agendas', async (req, res) => {
       try {
-        const listResp = await fetch(`${baseUrl}/generated_agendas`);
+        const listResp = await fetch(`${baseUrl}:runQuery`, {
+          method: 'POST',
+          body: JSON.stringify({
+            structuredQuery: {
+              from: [{ collectionId: 'generated_agendas' }]
+            }
+          })
+        });
         const data = await listResp.json();
-        const docs = data.documents || [];
-        for (const doc of docs) {
-          await fetch(`https://firestore.googleapis.com/v1/${doc.name}`, { method: 'DELETE' });
+        
+        if (data[0] && data[0].error) {
+           return res.status(500).json({ error: data[0].error.message });
+        }
+        
+        for (const d of data) {
+          if (d.document?.name) {
+            await fetch(`https://firestore.googleapis.com/v1/${d.document.name}`, { method: 'DELETE' });
+          }
         }
         res.json({ success: true });
       } catch (e: any) {

@@ -184,22 +184,29 @@ const Editorial: React.FC<EditorialProps> = ({
       
       // Also share to cloud for team visibility
       try {
-        let success = await shareAgendaFirebase(newPdf);
+        setAlertDialog({ message: "Sincronizando con la nube vía Proxy...", hideClose: true } as any);
+        let success = await shareAgendaProxy(newPdf);
         if (!success) {
-           console.log("Firebase sync failed, trying proxy...");
-           success = await shareAgendaProxy(newPdf);
+           console.log("Proxy sync failed, trying direct Firebase...");
+           success = await shareAgendaFirebase(newPdf);
         }
         if (success) {
           setAlertDialog({ message: "Agenda generada y compartida en la Nube con éxito." });
+          getSharedAgendasProxy().then(docs => {
+             if (docs.length > 0) setSharedAgendasList(docs);
+          });
         } else {
-          setAlertDialog({ message: "Agenda guardada localmente, pero no se pudo sincronizar con la Nube. Revisa tu conexión." });
+          setAlertDialog({ message: "Error al sincronizar con la Nube. Se guardó solo localmente." });
         }
       } catch (e) {
         console.error("Cloud share error:", e);
         try {
-            const proxied = await shareAgendaProxy(newPdf);
-            if (proxied) {
-                setAlertDialog({ message: "Agenda compartida vía Proxy Exitosamente." });
+            const fbSuccess = await shareAgendaFirebase(newPdf);
+            if (fbSuccess) {
+                setAlertDialog({ message: "Agenda compartida vía Firebase Exitosamente." });
+                getSharedAgendasProxy().then(docs => {
+                   if (docs.length > 0) setSharedAgendasList(docs);
+                });
             } else {
                 setAlertDialog({ message: "Error al sincronizar con la Nube. Se guardó solo localmente." });
             }
