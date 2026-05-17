@@ -15,6 +15,10 @@ import {
   getSharedAgendas,
   deleteSharedAgenda,
   deleteAllSharedAgendas,
+  shareAgendaProxy,
+  getSharedAgendasProxy,
+  deleteSharedAgendaProxy,
+  deleteAllSharedAgendasProxy,
   EditorialSyncData 
 } from '../services/firebaseSync';
 
@@ -149,8 +153,8 @@ const Editorial: React.FC<EditorialProps> = ({
   React.useEffect(() => {
      if (viewPdfArchive) {
         loadAgendaPdfs().then(setArchiveList);
-        // Also listen to shared agendas from cloud
-        return getSharedAgendas(setSharedAgendasList);
+        // Load shared agendas using proxy to bypass VPN
+        getSharedAgendasProxy().then(setSharedAgendasList);
      }
   }, [viewPdfArchive]);
 
@@ -180,7 +184,11 @@ const Editorial: React.FC<EditorialProps> = ({
       
       // Also share to cloud for team visibility
       try {
-        const success = await shareAgendaFirebase(newPdf);
+        let success = await shareAgendaFirebase(newPdf);
+        if (!success) {
+           console.log("Firebase sync failed, trying proxy...");
+           success = await shareAgendaProxy(newPdf);
+        }
         if (success) {
           setAlertDialog({ message: "Agenda generada y compartida en la Nube con éxito." });
         } else {
@@ -188,7 +196,16 @@ const Editorial: React.FC<EditorialProps> = ({
         }
       } catch (e) {
         console.error("Cloud share error:", e);
-        setAlertDialog({ message: "Error al sincronizar con la Nube. Se guardó solo localmente." });
+        try {
+            const proxied = await shareAgendaProxy(newPdf);
+            if (proxied) {
+                setAlertDialog({ message: "Agenda compartida vía Proxy Exitosamente." });
+            } else {
+                setAlertDialog({ message: "Error al sincronizar con la Nube. Se guardó solo localmente." });
+            }
+        } catch (ex) {
+            setAlertDialog({ message: "Error al sincronizar con la Nube. Se guardó solo localmente." });
+        }
       }
 
       setViewPdfArchive(true);
@@ -887,7 +904,16 @@ const Editorial: React.FC<EditorialProps> = ({
             </h2>
             <div className="flex gap-2">
               <button 
-                onClick={() => getSharedAgendas(setSharedAgendasList)}
+                onClick={async () => {
+                  setAlertDialog({ message: "Actualizando nube... por favor espera.", hideClose: true } as any);
+                  try {
+                    const agendas = await getSharedAgendasProxy();
+                    setSharedAgendasList(agendas);
+                    setAlertDialog({ message: "Nube actualizada correctamente." });
+                  } catch (e) {
+                    setAlertDialog({ message: "Error actualizando la nube." });
+                  }
+                }}
                 className="size-8 rounded-full bg-white/5 flex items-center justify-center text-text-secondary hover:bg-white/10 transition-colors"
                 title="Actualizar Nube"
               >
@@ -899,8 +925,10 @@ const Editorial: React.FC<EditorialProps> = ({
                     setConfirmDialog({
                       message: "¿Estás seguro de ELIMINAR TODOS los archivos de la NUBE?",
                       onConfirm: async () => {
-                        await deleteAllSharedAgendas();
+                        await deleteAllSharedAgendasProxy();
                         setAlertDialog({ message: "Nube de archivos limpiada." });
+                        const agendas = await getSharedAgendasProxy();
+                        setSharedAgendasList(agendas);
                       }
                     });
                   }}
@@ -937,7 +965,9 @@ const Editorial: React.FC<EditorialProps> = ({
                               setConfirmDialog({
                                 message: "¿Eliminar este archivo de la nube?",
                                 onConfirm: async () => {
-                                  await deleteSharedAgenda(agenda.id);
+                                  await deleteSharedAgendaProxy(agenda.id);
+                                  const agendas = await getSharedAgendasProxy();
+                                  setSharedAgendasList(agendas);
                                 }
                               });
                             }}
@@ -949,11 +979,24 @@ const Editorial: React.FC<EditorialProps> = ({
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => {
+                      <button onClick={async () => {
                         if (agenda.hasBinary && agenda.fileData) {
-                          const binaryData = typeof agenda.fileData.toUint8Array === 'function' 
-                            ? agenda.fileData.toUint8Array() 
-                            : agenda.fileData;
+                          let binaryData;
+                          if (typeof agenda.fileData === 'string') {
+                              // is base64 string
+                              const binaryString = atob(agenda.fileData);
+                              const len = binaryString.length;
+                              const bytes = new Uint8Array(len);
+                              for (let i = 0; i < len; i++) {
+                                  bytes[i] = binaryString.charCodeAt(i);
+                              }
+                              binaryData = bytes;
+                          } else {
+                              // is firestore Bytes
+                              binaryData = typeof agenda.fileData.toUint8Array === 'function' 
+                                ? agenda.fileData.toUint8Array() 
+                                : agenda.fileData;
+                          }
                           const blob = new Blob([binaryData], { type: 'application/pdf' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');

@@ -2,17 +2,112 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import * as cheerio from "cheerio";
 import path from "path";
+import fs from "fs";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: "10mb" }));
 
   // API routes FIRST
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
   });
+
+  // Lee firebase config si existe
+  let firebaseConfig: any = null;
+  try {
+    firebaseConfig = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'firebase-applet-config.json'), 'utf8'));
+  } catch (e) {
+    console.log("No firebase config found");
+  }
+
+  // Endpoints Proxy para conectarse a Firebase a través del backend (anti-bloqueos/VPN)
+  if (firebaseConfig) {
+    const { projectId, firestoreDatabaseId } = firebaseConfig;
+    const dbId = firestoreDatabaseId || '(default)';
+    const baseUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbId}/documents`;
+
+    app.get('/api/agendas', async (req, res) => {
+      try {
+        const resp = await fetch(`${baseUrl}/generated_agendas`);
+        const data = await resp.json();
+        const docs = (data.documents || []).map((doc: any) => {
+          const id = doc.name.split('/').pop();
+          const fields = doc.fields || {};
+          return {
+            id,
+            filename: fields.filename?.stringValue,
+            createdAt: fields.createdAt?.timestampValue || fields.createdAt?.stringValue,
+            month: fields.month?.stringValue,
+            weekLabel: fields.weekLabel?.stringValue,
+            hasBinary: fields.hasBinary?.booleanValue,
+            fileData: fields.fileData?.bytesValue,
+            sharedBy: fields.sharedBy?.stringValue,
+            authorId: fields.authorId?.stringValue
+          };
+        });
+        docs.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        res.json(docs);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    app.post('/api/agendas', async (req, res) => {
+      const newId = req.body.id || Date.now().toString();
+      const postUrl = `${baseUrl}/generated_agendas?documentId=${newId}`;
+      const fields: any = {
+        filename: { stringValue: req.body.filename || '' },
+        month: { stringValue: req.body.month || '' },
+        weekLabel: { stringValue: req.body.weekLabel || '' },
+        sharedBy: { stringValue: req.body.sharedBy || 'Proxy' },
+        authorId: { stringValue: req.body.authorId || 'Anonymous' },
+        createdAt: { timestampValue: new Date().toISOString() },
+        hasBinary: { booleanValue: req.body.hasBinary || false },
+      };
+      if (req.body.fileData) {
+        fields.fileData = { bytesValue: req.body.fileData };
+      }
+
+      try {
+        const resp = await fetch(postUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields })
+        });
+        const data = await resp.json();
+        res.json(data);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    app.delete('/api/agendas/:id', async (req, res) => {
+      try {
+        const resp = await fetch(`${baseUrl}/generated_agendas/${req.params.id}`, { method: 'DELETE' });
+        const data = await resp.json();
+        res.json(data);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    app.delete('/api/agendas', async (req, res) => {
+      try {
+        const listResp = await fetch(`${baseUrl}/generated_agendas`);
+        const data = await listResp.json();
+        const docs = data.documents || [];
+        for (const doc of docs) {
+          await fetch(`https://firestore.googleapis.com/v1/${doc.name}`, { method: 'DELETE' });
+        }
+        res.json({ success: true });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+  }
 
   app.post('/api/news', async (req, res) => {
     const { url } = req.body;
