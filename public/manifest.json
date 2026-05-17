@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Radio Ciudad Monumento",
-  "short_name": "CMNL App",
+  "name": "CMNL App VPN",
+  "short_name": "CMNL App VPN",
   "description": "La voz de la segunda villa cubana. Noticias, programación y radio en vivo.",
   "start_url": "/",
   "scope": "/",
