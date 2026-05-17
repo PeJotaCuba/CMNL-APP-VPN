@@ -92,6 +92,11 @@ function rewriteGoogleUrl(url: string): string {
     return url.replace(/^https?:\/\/securetoken\.googleapis\.com/, '/__firebase/securetoken');
   } else if (url.includes('firestore.googleapis.com')) {
     return url.replace(/^https?:\/\/firestore\.googleapis\.com/, '/__firebase/firestore');
+  } else if (url.includes('www.googleapis.com/identitytoolkit')) {
+    return url.replace(/^https?:\/\/www\.googleapis\.com\/identitytoolkit/, '/__firebase/identitytoolkit');
+  } else if (url.includes('www.googleapis.com/v1/projects') && (url.includes('firestore') || url.includes('token'))) {
+    // Some versions of SDK might use www.googleapis.com
+    return url.replace(/^https?:\/\/www\.googleapis\.com/, '/__firebase/googleapi');
   }
   return url;
 }

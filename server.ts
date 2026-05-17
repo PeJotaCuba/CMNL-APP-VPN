@@ -9,12 +9,14 @@ async function startServer() {
   const PORT = 3000;
 
   // Firebase VPN Tunnel Proxies
-  app.use('/__firebase/firestore', createProxyMiddleware({
+  const firestoreProxy = createProxyMiddleware({
     target: 'https://firestore.googleapis.com',
     changeOrigin: true,
     pathRewrite: { '^/__firebase/firestore': '' },
     ws: true // Handle firestore websocket channels
-  }));
+  });
+
+  app.use('/__firebase/firestore', firestoreProxy);
 
   app.use('/__firebase/identitytoolkit', createProxyMiddleware({
     target: 'https://identitytoolkit.googleapis.com',
@@ -26,6 +28,12 @@ async function startServer() {
     target: 'https://securetoken.googleapis.com',
     changeOrigin: true,
     pathRewrite: { '^/__firebase/securetoken': '' }
+  }));
+
+  app.use('/__firebase/googleapi', createProxyMiddleware({
+    target: 'https://www.googleapis.com',
+    changeOrigin: true,
+    pathRewrite: { '^/__firebase/googleapi': '' }
   }));
 
   app.use(express.json());
@@ -104,8 +112,15 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+  });
+
+  // Handle WebSocket upgrades for the firestore proxy
+  server.on('upgrade', (req, socket, head) => {
+    if (req.url?.startsWith('/__firebase/firestore')) {
+      (firestoreProxy as any).upgrade(req, socket, head);
+    }
   });
 }
 

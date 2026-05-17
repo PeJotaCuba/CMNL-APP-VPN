@@ -131,6 +131,18 @@ export const getSharedAgendas = (callback: (agendas: any[]) => void) => {
   });
 };
 
+export const fetchSharedAgendas = async () => {
+  const path = 'generated_agendas';
+  try {
+    const q = query(collection(db, path), orderBy('createdAt', 'desc'), limit(50));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 // 2. Editorial Real-time Sync
 export const syncEditorialContent = (
   month: string, 

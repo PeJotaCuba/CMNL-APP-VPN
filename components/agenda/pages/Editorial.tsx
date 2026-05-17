@@ -13,6 +13,7 @@ import {
   updateEditorialFirebase, 
   shareAgendaFirebase, 
   getSharedAgendas,
+  fetchSharedAgendas,
   deleteSharedAgenda,
   deleteAllSharedAgendas,
   EditorialSyncData 
@@ -142,6 +143,8 @@ const Editorial: React.FC<EditorialProps> = ({
   // Firestore Data State
   const [firebaseEditorialData, setFirebaseEditorialData] = useState<Record<string, EditorialSyncData>>({});
   const [sharedAgendasList, setSharedAgendasList] = useState<any[]>([]);
+  const [refreshCloud, setRefreshCloud] = useState(0);
+  const [isRefreshingCloud, setIsRefreshingCloud] = useState(false);
 
   const [commentModal, setCommentModal] = useState<{program: Program, dayName: string, fullDate: string, data: DailyContent} | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -149,11 +152,16 @@ const Editorial: React.FC<EditorialProps> = ({
 
   React.useEffect(() => {
      if (viewPdfArchive) {
+        setIsRefreshingCloud(true);
         loadAgendaPdfs().then(setArchiveList);
         // Also listen to shared agendas from cloud
-        return getSharedAgendas(setSharedAgendasList);
+        const unsubscribe = getSharedAgendas((data) => {
+           setSharedAgendasList(data);
+           setIsRefreshingCloud(false);
+        });
+        return unsubscribe;
      }
-  }, [viewPdfArchive]);
+  }, [viewPdfArchive, refreshCloud]);
 
   // Real-time synchronization for editorial content
   React.useEffect(() => {
@@ -412,6 +420,18 @@ const Editorial: React.FC<EditorialProps> = ({
 
      onUpdateMany(updatedPrograms);
      onUpdateDayThemes(updatedDayThemes);
+  };
+
+  const handleManualRefreshCloud = async () => {
+    setIsRefreshingCloud(true);
+    try {
+      const data = await fetchSharedAgendas();
+      setSharedAgendasList(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsRefreshingCloud(false);
+    }
   };
 
   const dialogModals = (
@@ -907,8 +927,9 @@ const Editorial: React.FC<EditorialProps> = ({
             </h2>
             <div className="flex gap-2">
               <button 
-                onClick={() => getSharedAgendas(setSharedAgendasList)}
-                className="size-8 rounded-full bg-white/5 flex items-center justify-center text-text-secondary hover:bg-white/10 transition-colors"
+                onClick={handleManualRefreshCloud}
+                disabled={isRefreshingCloud}
+                className={`size-8 rounded-full bg-white/5 flex items-center justify-center text-text-secondary hover:bg-white/10 transition-colors ${isRefreshingCloud ? 'animate-spin opacity-50' : ''}`}
                 title="Actualizar Nube"
               >
                 <span className="material-symbols-outlined text-sm">refresh</span>
