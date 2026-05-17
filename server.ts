@@ -2,150 +2,17 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import * as cheerio from "cheerio";
 import path from "path";
-import fs from "fs";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json({ limit: "10mb" }));
+  app.use(express.json());
 
   // API routes FIRST
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
   });
-
-  // Lee firebase config si existe
-  let firebaseConfig: any = null;
-  try {
-    firebaseConfig = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'firebase-applet-config.json'), 'utf8'));
-  } catch (e) {
-    console.log("No firebase config found");
-  }
-
-  // Endpoints Proxy para conectarse a Firebase a través del backend (anti-bloqueos/VPN)
-  if (firebaseConfig) {
-    const { projectId, firestoreDatabaseId } = firebaseConfig;
-    const dbId = firestoreDatabaseId || '(default)';
-    const baseUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbId}/documents`;
-
-    app.get('/api/agendas', async (req, res) => {
-      try {
-        const resp = await fetch(`${baseUrl}:runQuery`, {
-          method: 'POST',
-          body: JSON.stringify({
-            structuredQuery: {
-              from: [{ collectionId: 'generated_agendas' }],
-              orderBy: [{ field: { fieldPath: 'createdAt' }, direction: 'DESCENDING' }],
-              limit: 50
-            }
-          })
-        });
-        const data = await resp.json();
-        
-        if (data[0] && data[0].error) {
-           return res.status(500).json({ error: data[0].error.message });
-        }
-        
-        // runQuery returns an array of { document, readTime }
-        if (!Array.isArray(data) || (!data[0]?.document && Object.keys(data[0] || {}).length <= 1)) {
-           return res.json([]);
-        }
-        
-        const docs = data.map((d: any) => {
-          if (!d.document) return null;
-          const fields = d.document.fields || {};
-          return {
-            id: d.document.name.split('/').pop(),
-            filename: fields.filename?.stringValue,
-            createdAt: fields.createdAt?.timestampValue || fields.createdAt?.stringValue,
-            month: fields.month?.stringValue,
-            weekLabel: fields.weekLabel?.stringValue,
-            hasBinary: fields.hasBinary?.booleanValue,
-            fileData: fields.fileData?.bytesValue,
-            sharedBy: fields.sharedBy?.stringValue,
-            authorId: fields.authorId?.stringValue
-          };
-        }).filter(Boolean);
-        res.json(docs);
-      } catch (e: any) {
-        res.status(500).json({ error: e.message });
-      }
-    });
-
-    app.post('/api/agendas', async (req, res) => {
-      const newId = req.body.id || Date.now().toString();
-      const postUrl = `${baseUrl}/generated_agendas?documentId=${newId}`;
-      const fields: any = {
-        filename: { stringValue: req.body.filename || '' },
-        month: { stringValue: req.body.month || '' },
-        weekLabel: { stringValue: req.body.weekLabel || '' },
-        sharedBy: { stringValue: req.body.sharedBy || 'Proxy' },
-        authorId: { stringValue: req.body.authorId || 'Anonymous' },
-        createdAt: { timestampValue: new Date().toISOString() },
-        hasBinary: { booleanValue: req.body.hasBinary || false },
-      };
-      if (req.body.fileData) {
-        fields.fileData = { bytesValue: req.body.fileData };
-      }
-
-      try {
-        const resp = await fetch(postUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields })
-        });
-        const data = await resp.json();
-        if (!resp.ok) {
-           console.error("Firestore Upload Error from Proxy:", data);
-           require('fs').appendFileSync('proxy.log', JSON.stringify({err: data}) + '\\n');
-           return res.status(resp.status).json(data);
-        }
-        res.json(data);
-      } catch (e: any) {
-        console.error("Server fetch error:", e.message);
-        require('fs').appendFileSync('proxy.log', JSON.stringify({err: e.message}) + '\\n');
-        res.status(500).json({ error: e.message });
-      }
-    });
-
-    app.delete('/api/agendas/:id', async (req, res) => {
-      try {
-        const resp = await fetch(`${baseUrl}/generated_agendas/${req.params.id}`, { method: 'DELETE' });
-        const data = await resp.json();
-        res.json(data);
-      } catch (e: any) {
-        res.status(500).json({ error: e.message });
-      }
-    });
-
-    app.delete('/api/agendas', async (req, res) => {
-      try {
-        const listResp = await fetch(`${baseUrl}:runQuery`, {
-          method: 'POST',
-          body: JSON.stringify({
-            structuredQuery: {
-              from: [{ collectionId: 'generated_agendas' }]
-            }
-          })
-        });
-        const data = await listResp.json();
-        
-        if (data[0] && data[0].error) {
-           return res.status(500).json({ error: data[0].error.message });
-        }
-        
-        for (const d of data) {
-          if (d.document?.name) {
-            await fetch(`https://firestore.googleapis.com/v1/${d.document.name}`, { method: 'DELETE' });
-          }
-        }
-        res.json({ success: true });
-      } catch (e: any) {
-        res.status(500).json({ error: e.message });
-      }
-    });
-  }
 
   app.post('/api/news', async (req, res) => {
     const { url } = req.body;

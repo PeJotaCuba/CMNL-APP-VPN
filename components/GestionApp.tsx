@@ -2373,31 +2373,6 @@ const GestionApp: React.FC<Props> = ({ onBack, onMenuClick, currentUser, onDirty
                                                   onClick={() => {
                                                       if (window.confirm('¿Eliminar esta interrupción?')) {
                                                           setInterruptions(interruptions.filter(i => i.id !== inter.id));
-                                                          
-                                                          // Update historical if the month is already consolidated
-                                                          if (inter.date) {
-                                                              const monthStr = inter.date.substring(0, 7);
-                                                              const updatedConsolidated = [...consolidatedMonths];
-                                                              const hIndex = updatedConsolidated.findIndex(m => m.month === monthStr);
-                                                              if (hIndex >= 0) {
-                                                                  const cm = { ...updatedConsolidated[hIndex] };
-                                                                  cm.interruptionDetails = cm.interruptionDetails?.filter(i => i.id !== inter.id) || [];
-                                                                  
-                                                                  cm.interruptions = { ...cm.interruptions };
-                                                                  cm.interruptions[inter.category as keyof TransmissionBreakdown] = 
-                                                                      Math.max(0, (cm.interruptions[inter.category as keyof TransmissionBreakdown] || 0) - (Number(inter.affectedMinutes) || 0));
-                                                                  
-                                                                  let newTotal = 0;
-                                                                  Object.keys(cm.interruptions).forEach(k => {
-                                                                      if (k !== 'total') newTotal += cm.interruptions[k as keyof TransmissionBreakdown];
-                                                                  });
-                                                                  cm.interruptions.total = newTotal;
-                                                                  cm.totalRealMinutes = cm.accumulated.total - cm.interruptions.total;
-                                                                  
-                                                                  updatedConsolidated[hIndex] = cm;
-                                                                  setConsolidatedMonths(updatedConsolidated);
-                                                              }
-                                                          }
                                                       }
                                                   }}
                                                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
@@ -2499,40 +2474,7 @@ const GestionApp: React.FC<Props> = ({ onBack, onMenuClick, currentUser, onDirty
                   <InterruptionModal 
                       onClose={() => setShowInterruptionsModal(false)} 
                       onSave={(newInterruptions) => {
-                          const updatedInterruptions = [...interruptions, ...newInterruptions];
-                          setInterruptions(updatedInterruptions);
-                          
-                          // Recalculate historical months if an interruption belongs to one
-                          const updatedConsolidated = [...consolidatedMonths];
-                          let hasChanges = false;
-                          
-                          newInterruptions.forEach(ni => {
-                              if (!ni.date) return;
-                              const monthStr = ni.date.substring(0, 7);
-                              const idx = updatedConsolidated.findIndex(m => m.month === monthStr);
-                              if (idx >= 0) {
-                                  hasChanges = true;
-                                  const cm = { ...updatedConsolidated[idx] };
-                                  cm.interruptionDetails = [...(cm.interruptionDetails || []), ni];
-                                  
-                                  cm.interruptions = { ...cm.interruptions };
-                                  cm.interruptions[ni.category as keyof TransmissionBreakdown] = 
-                                      (cm.interruptions[ni.category as keyof TransmissionBreakdown] || 0) + (Number(ni.affectedMinutes) || 0);
-                                  
-                                  let newTotal = 0;
-                                  Object.keys(cm.interruptions).forEach(k => {
-                                      if (k !== 'total') newTotal += cm.interruptions[k as keyof TransmissionBreakdown];
-                                  });
-                                  cm.interruptions.total = newTotal;
-                                  cm.totalRealMinutes = cm.accumulated.total - cm.interruptions.total;
-                                  updatedConsolidated[idx] = cm;
-                              }
-                          });
-                          
-                          if (hasChanges) {
-                              setConsolidatedMonths(updatedConsolidated);
-                          }
-                          
+                          setInterruptions([...interruptions, ...newInterruptions]);
                           setShowInterruptionsModal(false);
                       }}
                       fichas={fichas}

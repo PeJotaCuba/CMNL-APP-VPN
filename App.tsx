@@ -593,14 +593,12 @@ const AppContent: React.FC = () => {
                               });
                               setLocal(localKey, merged);
                           } else {
-                              // Cloud acts as truth for deletions and updates, but preserve local non-synced items
+                              // For other protected data (worklogs, reports), keep local and add new ones from JSON if they don't exist
                               const getId = (item: any) => (typeof idKey === 'function' ? idKey(item) : item[idKey]);
-                              const merged = [...jsonData]; // Take cloud items exactly as they are (includes cloud updates and drops cloud deletions)
-                              
-                              // Preserve strictly local items that don't exist in the cloud yet
-                              localData.forEach(oldItem => {
-                                  if (!jsonData.some(newItem => getId(newItem) === getId(oldItem))) {
-                                      merged.push(oldItem);
+                              const merged = [...localData];
+                              jsonData.forEach(newItem => {
+                                  if (!merged.some(oldItem => getId(oldItem) === getId(newItem))) {
+                                      merged.push(newItem);
                                   }
                               });
                               setLocal(localKey, merged);
