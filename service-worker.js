@@ -1,5 +1,5 @@
 /*
- * Service Worker para CMNL App
+ * Service Worker para CMNL App VPN
  * Estrategia: Cache-First para estáticos, Network-First para navegación.
  */
 

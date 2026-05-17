@@ -1,11 +1,32 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import * as cheerio from "cheerio";
 import path from "path";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Firebase VPN Tunnel Proxies
+  app.use('/__firebase/firestore', createProxyMiddleware({
+    target: 'https://firestore.googleapis.com',
+    changeOrigin: true,
+    pathRewrite: { '^/__firebase/firestore': '' },
+    ws: true // Handle firestore websocket channels
+  }));
+
+  app.use('/__firebase/identitytoolkit', createProxyMiddleware({
+    target: 'https://identitytoolkit.googleapis.com',
+    changeOrigin: true,
+    pathRewrite: { '^/__firebase/identitytoolkit': '' }
+  }));
+
+  app.use('/__firebase/securetoken', createProxyMiddleware({
+    target: 'https://securetoken.googleapis.com',
+    changeOrigin: true,
+    pathRewrite: { '^/__firebase/securetoken': '' }
+  }));
 
   app.use(express.json());
 

@@ -1,4 +1,4 @@
-# Configuración PWA para CMNL App
+# Configuración PWA para CMNL App VPN
 
 Esta aplicación ha sido configurada como una Progressive Web App (PWA). Para completar la instalación, sigue estos pasos:
 

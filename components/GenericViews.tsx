@@ -456,7 +456,7 @@ export const PlaceholderView: React.FC<ViewProps> = ({ title, subtitle, onBack, 
                         rel="noopener noreferrer"
                         className="bg-white text-[#3E1E16] px-4 py-2 rounded-xl shadow-lg font-bold text-xs flex items-center gap-2 hover:bg-[#E8DCCF] transition-colors"
                      >
-                        Unirse a Comunidad CMNL
+                        Unirse a Comunidad CMNL App VPN
                      </a>
                      <a 
                         href="https://api.whatsapp.com/send?phone=5354413935"

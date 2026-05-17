@@ -1056,7 +1056,7 @@ const AppContent: React.FC = () => {
                     <div className="hidden md:flex flex-col justify-center w-64 bg-[#2C1B15] border-r border-white/5 px-6 shrink-0 py-3">
                         <p className="font-bold text-[#C69C6D] uppercase tracking-widest text-[10px] mb-1">Radio Ciudad Monumento</p>
                         <p className="text-[10px] text-stone-500">Voz de la segunda villa cubana</p>
-                        <p className="text-[10px] text-stone-500 opacity-50 mt-1">CMNL App 2026</p>
+                        <p className="text-[10px] text-stone-500 opacity-50 mt-1">CMNL App VPN 2026</p>
                     </div>
                  )}
 

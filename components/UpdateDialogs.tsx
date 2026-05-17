@@ -19,7 +19,7 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
     if (!isOpen) return null;
 
     const handleShare = () => {
-        const text = `Actualización de Datos CMNL completada exitosamente.\n\nDetalles:\n${details}\n\nIngresa a la app para ver los cambios.`;
+        const text = `Actualización de Datos CMNL App VPN completada exitosamente.\n\nDetalles:\n${details}\n\nIngresa a la app para ver los cambios.`;
         openWhatsApp(text);
     };
 

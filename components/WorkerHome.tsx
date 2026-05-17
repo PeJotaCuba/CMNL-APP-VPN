@@ -308,7 +308,7 @@ const WorkerHome: React.FC<Props> = ({
                <img src={LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-[#FFF8DC] leading-none tracking-tight">CMNL App</h1>
+              <h1 className="text-sm font-bold text-[#FFF8DC] leading-none tracking-tight">CMNL App VPN</h1>
               <p className="text-[8px] text-[#CD853F] uppercase tracking-tighter mt-0.5">Gestión Interna</p>
             </div>
           </div>
@@ -499,7 +499,7 @@ const WorkerHome: React.FC<Props> = ({
            </div>
            
            <div className="text-center mt-4">
-              <p className="text-[10px] text-stone-600 uppercase tracking-[0.2em]">CMNL App • App Interna</p>
+              <p className="text-[10px] text-stone-600 uppercase tracking-[0.2em]">CMNL App VPN • App Interna</p>
            </div>
         </div>
       </div>

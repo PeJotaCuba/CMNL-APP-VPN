@@ -68,7 +68,7 @@ const ListenerHome: React.FC<Props> = ({ onNavigate, news, onSync, isSyncing, on
                <img src={LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-sm font-serif font-bold text-[#C69C6D] leading-none tracking-wide">CMNL App</h1>
+              <h1 className="text-sm font-serif font-bold text-[#C69C6D] leading-none tracking-wide">CMNL App VPN</h1>
               <p className="text-[8px] text-stone-500 uppercase tracking-tighter mt-0.5">Voz de la segunda villa cubana</p>
             </div>
           </div>
@@ -90,7 +90,7 @@ const ListenerHome: React.FC<Props> = ({ onNavigate, news, onSync, isSyncing, on
                 <img src={LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-                <h1 className="text-white font-black text-lg leading-none tracking-tight">CMNL App</h1>
+                <h1 className="text-white font-black text-lg leading-none tracking-tight">CMNL App VPN</h1>
                 <p className="text-[10px] text-[#9E7649]/80 italic mt-0.5 font-serif">Oyentes</p>
             </div>
          </div>
@@ -189,7 +189,7 @@ const ListenerHome: React.FC<Props> = ({ onNavigate, news, onSync, isSyncing, on
         <div className="mt-8 pb-4 border-t border-white/5 pt-6 flex flex-col items-center justify-center gap-2 text-stone-500 text-xs md:hidden">
             <p className="font-bold text-[#C69C6D] uppercase tracking-widest">Radio Ciudad Monumento</p>
             <p>Voz de la segunda villa cubana</p>
-            <p className="opacity-50 mt-1">CMNL App 2026</p>
+            <p className="opacity-50 mt-1">CMNL App VPN 2026</p>
         </div>
 
       </main>
@@ -204,7 +204,7 @@ const ListenerHome: React.FC<Props> = ({ onNavigate, news, onSync, isSyncing, on
                     rel="noopener noreferrer"
                     className="bg-white text-[#3E1E16] px-4 py-2 rounded-xl shadow-lg font-bold text-xs flex items-center gap-2 hover:bg-[#E8DCCF] transition-colors"
                  >
-                    Unirse a Comunidad CMNL
+                    Unirse a Comunidad CMNL App VPN
                  </a>
                  <a 
                     href="https://api.whatsapp.com/send?phone=5354413935"

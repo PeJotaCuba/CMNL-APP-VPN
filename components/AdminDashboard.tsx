@@ -130,7 +130,7 @@ const AdminDashboard: React.FC<Props> = ({
                <img src={LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white leading-none tracking-tight">CMNL App</h1>
+              <h1 className="text-sm font-bold text-white leading-none tracking-tight">CMNL App VPN</h1>
               <p className="text-[8px] text-[#9E7649] uppercase tracking-tighter mt-0.5">Panel Interno</p>
             </div>
           </div>

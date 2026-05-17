@@ -27,7 +27,7 @@ const CMNLHeader: React.FC<CMNLHeaderProps> = ({ user, sectionTitle, onMenuClick
                 <img src={LOGO_URL} alt="Logo CMNL" className="w-full h-full object-contain" />
              </div>
              <div>
-                <h1 className="text-white font-bold text-lg leading-none tracking-tight">CMNL App</h1>
+                <h1 className="text-white font-bold text-lg leading-none tracking-tight">CMNL App VPN</h1>
                 <p className="text-[#9E7649] text-[10px] font-bold uppercase tracking-widest mt-0.5">PANEL INTERNO</p>
              </div>
           </div>

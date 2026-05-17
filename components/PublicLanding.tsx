@@ -128,7 +128,7 @@ const PublicLanding: React.FC<Props> = ({ onNavigate, users, onLoginSuccess }) =
       </div>
 
       <div className="absolute bottom-4 left-0 right-0 text-center">
-         <p className="text-[10px] text-[#8C7B70]">Sistema de Gestión Interna CMNL</p>
+         <p className="text-[10px] text-[#8C7B70]">Sistema de Gestión Interna CMNL App VPN</p>
       </div>
     </div>
   );

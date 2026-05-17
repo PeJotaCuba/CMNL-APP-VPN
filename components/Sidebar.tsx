@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppView, User } from '../types';
 import { openWhatsApp } from '../utils/whatsappUtils';
+import { isVPNEnabled, toggleVPN } from '../src/lib/vpnProxy';
 import { 
   X, 
   ScrollText, 
@@ -19,7 +20,8 @@ import {
   Share2,
   MessageCircle,
   Send,
-  Wrench
+  Wrench,
+  ShieldAlert
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -191,6 +193,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 disabled={isSyncing}
               />
             )}
+            
+            <SidebarItem 
+              icon={<ShieldAlert size={20} className={isVPNEnabled() ? 'text-green-400' : 'text-stone-400'} />} 
+              label={`Túnel Alternativo ${isVPNEnabled() ? '(Activo)' : ''}`} 
+              onClick={() => toggleVPN()} 
+              className={isVPNEnabled() ? 'bg-green-500/10 text-green-400 font-bold' : 'text-stone-400'}
+            />
             
             <div className="w-full">
               <SidebarItem 

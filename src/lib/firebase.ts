@@ -1,3 +1,9 @@
+import { enableFirebaseVPN, isVPNEnabled } from './vpnProxy';
+
+if (isVPNEnabled()) {
+  enableFirebaseVPN();
+}
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';

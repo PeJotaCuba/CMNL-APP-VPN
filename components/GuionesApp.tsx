@@ -1201,7 +1201,7 @@ const GuionesApp: React.FC<GuionesAppProps> = ({ currentUser, onBack, onMenuClic
 
     return (
         <div className="min-h-screen bg-[#1A100C] text-[#E8DCCF] font-sans transition-colors duration-300 flex flex-col">
-            {/* Navbar Superior (Mantiene el diseño de CMNL App) */}
+            {/* Navbar Superior (Mantiene el diseño de CMNL App VPN) */}
             <CMNLHeader 
                 user={currentUser ? { name: currentUser.name, role: currentUser.classification || currentUser.role } : null}
                 sectionTitle={selectedProgram || (showStats ? "Estadísticas" : "Guiones")}

@@ -87,7 +87,7 @@ const InstallPWA: React.FC = () => {
                         </div>
                         
                         <div className="flex-1">
-                            <h3 className="text-white font-bold text-sm">Instalar CMNL App</h3>
+                            <h3 className="text-white font-bold text-sm">Instalar CMNL App VPN</h3>
                             <p className="text-[#E8DCCF]/60 text-xs mt-0.5 leading-tight">
                                 Disfruta de la experiencia moderna completa sin usar el navegador.
                             </p>
